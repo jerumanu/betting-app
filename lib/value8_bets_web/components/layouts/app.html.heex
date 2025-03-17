@@ -1,0 +1,44 @@
+<header class="px-4 sm:px-6 lg:px-8">
+  <div class="flex items-center justify-between border-b border-zinc-100 py-3 text-sm">
+    <div class="flex items-center gap-4">
+      <a href="/">
+        <img src={~p"/images/logo.svg"} width="36" />
+      </a>
+      <p class="bg-brand/5 text-brand rounded-full px-2 font-medium leading-6">
+        Value8 Bets
+      </p>
+    </div>
+    <div class="flex items-center gap-4 font-semibold leading-6 text-zinc-900">
+      <.link navigate={~p"/betting"}>Games</.link>
+      <.link navigate={~p"/betting/history"}>History</.link>
+      <%= if @current_user do %>
+        <%= if Accounts.is_admin?(@current_user) do %>
+          <.link 
+            navigate={~p"/admin"} 
+            class="text-blue-600 hover:text-blue-800 font-medium"
+          >
+            Admin Panel
+          </.link>
+        <% end %>
+        <.link href={~p"/users/settings"}>Settings</.link>
+        <.link 
+          href={~p"/users/log_out"} 
+          method="delete"
+          class="text-red-600 hover:text-red-800"
+        >
+          Log out
+        </.link>
+      <% else %>
+        <.link href={~p"/users/log_in"}>Log in</.link>
+        <.link href={~p"/users/register"}>Register</.link>
+      <% end %>
+    </div>
+  </div>
+</header>
+
+<main class="px-4 py-20 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-2xl">
+    <.flash_group flash={@flash} />
+    <%= @inner_content %>
+  </div>
+</main>

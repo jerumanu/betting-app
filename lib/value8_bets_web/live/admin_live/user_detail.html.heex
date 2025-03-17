@@ -1,0 +1,94 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <%= if @current_user && Accounts.is_admin?(@current_user) do %>
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-semibold">User Details</h1>
+      <.link
+        navigate={~p"/admin/users"}
+        class="text-indigo-600 hover:text-indigo-900"
+      >
+        Back to Users
+      </.link>
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div class="px-4 py-5 sm:px-6">
+        <h2 class="text-lg font-medium"><%= @user.email %></h2>
+        <p class="mt-1 text-sm text-gray-500">
+          Registered: <%= Calendar.strftime(@user.inserted_at, "%Y-%m-%d %H:%M UTC") %>
+        </p>
+      </div>
+
+      <div class="border-t border-gray-200">
+        <div class="px-4 py-5">
+          <h3 class="text-lg font-medium mb-4">Betting History</h3>
+          <%= if Enum.empty?(@user.bets) do %>
+            <p class="text-gray-500">No bets placed yet</p>
+          <% else %>
+            <ul class="divide-y divide-gray-200">
+              <%= for bet <- @user.bets do %>
+                <li class="py-4">
+                  <div class="flex justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-gray-900">
+                        <%= bet.game.home_team %> vs <%= bet.game.away_team %>
+                      </p>
+                      <p class="text-sm text-gray-500">
+                        Team Picked: <%= bet.team_picked %>
+                      </p>
+                      <p class="text-sm text-gray-500">
+                        Amount: $<%= bet.amount %> (Odds: <%= bet.odds %>)
+                      </p>
+                      <p class="text-sm text-gray-500">
+                        Potential Win: $<%= bet.potential_win %>
+                      </p>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm text-gray-500">
+                        <%= Calendar.strftime(bet.game.game_time, "%Y-%m-%d %H:%M UTC") %>
+                      </p>
+                      <span class={[
+                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                        case bet.status do
+                          "pending" -> "bg-yellow-100 text-yellow-800"
+                          "won" -> "bg-green-100 text-green-800"
+                          "lost" -> "bg-red-100 text-red-800"
+                          "cancelled" -> "bg-gray-100 text-gray-800"
+                        end
+                      ]}>
+                        <%= String.capitalize(bet.status) %>
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg p-6 text-center">
+      <h2 class="text-xl font-medium text-gray-900 mb-4">
+        User Details
+      </h2>
+      <p class="text-gray-500">
+        This information is only available to administrators.
+      </p>
+      <%= if @current_user do %>
+        <p class="text-red-600 mt-4">
+          Your account does not have administrator privileges.
+        </p>
+      <% else %>
+        <div class="mt-6">
+          <.link
+            navigate={~p"/users/log_in"}
+            class="text-indigo-600 hover:text-indigo-900"
+          >
+            Log in
+          </.link>
+          to view user details.
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div> 

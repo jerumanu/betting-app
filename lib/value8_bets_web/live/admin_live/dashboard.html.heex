@@ -1,0 +1,118 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <h1 class="text-2xl font-semibold mb-6">Admin Dashboard</h1>
+
+  <%= if @current_user && Accounts.is_admin?(@current_user) do %>
+    <!-- Profit Summary -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+      <div class="px-4 py-5 sm:px-6">
+        <h2 class="text-lg font-medium">Profit Summary</h2>
+      </div>
+      <div class="border-t border-gray-200">
+        <dl>
+          <%= for profit <- @profits do %>
+            <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">
+                Game <%= profit.game_id %>
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                $<%= profit.total_profit %>
+              </dd>
+            </div>
+          <% end %>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Users List -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+        <h2 class="text-lg font-medium">Users</h2>
+        <%= if Accounts.is_superuser?(@current_user) do %>
+          <.link
+            navigate={~p"/admin/games/new"}
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+          >
+            Configure Games
+          </.link>
+        <% end %>
+      </div>
+      <div class="border-t border-gray-200">
+        <ul role="list" class="divide-y divide-gray-200">
+          <%= for user <- @users do %>
+            <li class="px-4 py-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-900">
+                    <%= user.email %>
+                    <%= if user.is_admin do %>
+                      <span class="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                        Admin
+                      </span>
+                    <% end %>
+                  </p>
+                  <div class="text-sm text-gray-500">
+                    <p>Total Bets: <%= user.total_bets %></p>
+                    <p>Won: <%= user.won_bets %> | Lost: <%= user.lost_bets %> | Pending: <%= user.pending_bets %></p>
+                    <p>Total Amount Bet: $<%= user.total_amount_bet || 0 %></p>
+                    <p>Total Winnings: $<%= user.total_winnings || 0 %></p>
+                  </div>
+                </div>
+                <div class="flex space-x-4">
+                  <.link
+                    navigate={~p"/admin/users/#{user.id}"}
+                    class="text-indigo-600 hover:text-indigo-900"
+                  >
+                    View Details
+                  </.link>
+                  <%= if @current_user.is_superuser && user.id != @current_user.id do %>
+                    <button
+                      phx-click="toggle-admin"
+                      phx-value-id={user.id}
+                      class="text-blue-600 hover:text-blue-900"
+                    >
+                      <%= if user.is_admin, do: "Revoke Admin", else: "Make Admin" %>
+                    </button>
+                  <% end %>
+                  <%= if user.id != @current_user.id do %>
+                    <button
+                      phx-click="delete-user"
+                      phx-value-id={user.id}
+                      data-confirm="Are you sure? This will delete all associated data."
+                      class="text-red-600 hover:text-red-900"
+                    >
+                      Delete
+                    </button>
+                  <% end %>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% else %>
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg p-6 text-center">
+      <h2 class="text-xl font-medium text-gray-900 mb-4">
+        Welcome to the Admin Dashboard
+      </h2>
+      <p class="text-gray-500 mb-4">
+        This area is restricted to administrators only.
+      </p>
+      <%= if @current_user do %>
+        <p class="text-red-600">
+          Your account does not have administrator privileges.
+        </p>
+      <% else %>
+        <div class="mt-6">
+          <.link
+            navigate={~p"/users/log_in"}
+            class="text-indigo-600 hover:text-indigo-900"
+          >
+            Log in
+          </.link>
+          to access admin features.
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div> 
