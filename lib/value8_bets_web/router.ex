@@ -126,6 +126,7 @@ defmodule Value8BetsWeb.Router do
       post "/games", AdminController, :create_game
       put "/games/:id", AdminController, :update_game
       delete "/users/:id", AdminController, :soft_delete_user
+      put "/bet/:id", AdminController, :update_bet
     end
 
     # Superuser only routes

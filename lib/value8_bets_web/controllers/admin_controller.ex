@@ -25,9 +25,9 @@ defmodule Value8BetsWeb.AdminController do
 
   defp count_new_users(users) do
     seven_days_ago = NaiveDateTime.utc_now() |> NaiveDateTime.add(-7 * 24 * 60 * 60)
-    
+
     users
-    |> Enum.filter(fn user -> 
+    |> Enum.filter(fn user ->
       NaiveDateTime.compare(user.inserted_at, seven_days_ago) == :gt
     end)
     |> length()
@@ -71,7 +71,7 @@ defmodule Value8BetsWeb.AdminController do
 
   @doc """
   Lists all users with their statistics and roles.
-  
+
   ## Returns
     - JSON response with users list including roles and stats
   """
@@ -89,7 +89,7 @@ defmodule Value8BetsWeb.AdminController do
                 created_at: user.inserted_at
               }
             end)
-    
+
     json(conn, %{data: users})
   end
 
@@ -253,6 +253,39 @@ defmodule Value8BetsWeb.AdminController do
     end
   end
 
+def update_bet(conn, %{"id" => bet_id} = params) do
+  case Betting.get_bet!(bet_id) do
+    nil ->
+      conn
+      |> put_status(:not_found)
+      |> json(%{error: "Bet not found with ID: #{bet_id}"})
+
+    bet ->
+      # Extract the attributes to update from params
+      updated_attrs = Map.take(params, ["status", "potential_win", "amount", "odds", "team_picked"])
+
+      case Betting.update_bet(bet, updated_attrs) do
+        {:ok, updated_bet} ->
+          json(conn, %{
+            message: "Bet updated successfully",
+            bet: %{
+              id: updated_bet.id,
+              status: updated_bet.status,
+              potential_win: Decimal.to_string(updated_bet.potential_win),
+              amount: Decimal.to_string(updated_bet.amount),
+              odds: Decimal.to_string(updated_bet.odds),
+              team_picked: updated_bet.team_picked,
+              updated_at: updated_bet.updated_at
+            }
+          })
+
+        {:error, changeset} ->
+          conn
+          |> put_status(:unprocessable_entity)
+          |> json(%{errors: format_changeset_errors(changeset)})
+      end
+  end
+end
   # Helper function to format changeset errors
   defp format_changeset_errors(changeset) do
     Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
